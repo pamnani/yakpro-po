@@ -86,7 +86,7 @@ $conf->silent                           = false;        // display or not Inform
 $conf->source_directory                 = "../magento2";         // self explanatory
 $conf->target_directory                 = "../obfuscated";         // self explanatory
 
-$conf->t_keep                           =  array('magento2/idp_saml');          // array of directory or file pathnames, to keep 'as is' (i.e. not obfuscate.)
+$conf->t_keep                           =  array("magento2/idp_saml");          // array of directory or file pathnames, to keep 'as is' (i.e. not obfuscate.)
 $conf->t_skip                           = null;         // array of directory or file pathnames, to skip when exploring source tree structure ... they will not be on target!
 $conf->allow_and_overwrite_empty_files  = true;         // allow empty files to be kept as is
 
