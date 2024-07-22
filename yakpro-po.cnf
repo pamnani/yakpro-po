@@ -83,8 +83,8 @@ $conf->confirm                          = true;         // rfu : will answer Y o
 $conf->silent                           = false;        // display or not Information level messages.
 
 
-$conf->source_directory                 = null;         // self explanatory
-$conf->target_directory                 = null;         // self explanatory
+$conf->source_directory                 = ../magento2;         // self explanatory
+$conf->target_directory                 = ../obfuscated;         // self explanatory
 
 $conf->t_keep                           = null;         // array of directory or file pathnames, to keep 'as is' (i.e. not obfuscate.)
 $conf->t_skip                           = null;         // array of directory or file pathnames, to skip when exploring source tree structure ... they will not be on target!
