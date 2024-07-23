@@ -105,7 +105,7 @@ switch($process_mode)
     case 'directory':
         if (isset($conf->t_skip) && is_array($conf->t_skip)) foreach($conf->t_skip as $key=>$val) $conf->t_skip[$key] = "$source_directory/$val";
         if (isset($conf->t_keep) && is_array($conf->t_keep)) foreach($conf->t_keep as $key=>$val) $conf->t_keep[$key] = "$source_directory/$val";
-        obfuscate_directory($source_directory,"$target_directory/yakpro-po/obfuscated");
+        obfuscate_directory($source_directory,$target_directory);
         exit(0);
 }
 
