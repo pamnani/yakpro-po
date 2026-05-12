@@ -97,21 +97,15 @@ $conf->extract_comment_from_line        = null;         // when both 2 are set, 
 $conf->extract_comment_to_line          = null;         // starting from extract_comment_from_line number, and ending at extract_comment_to_line line number.
 
 // --- Pipeline-Friendly API Whitelist ---
-// 1. Detect the actual source directory being processed
 $current_source = realpath($conf->source_directory);
 
 if ($current_source && is_dir($current_source)) {
-    // 2. Use a simpler glob that searches within the current execution's source
-    // We use [Aa][Pp][Ii] to catch Api, API, and api
     $api_paths = glob($current_source . '/**/[Aa][Pp][Ii]', GLOB_ONLYDIR);
 
     if (is_array($api_paths)) {
         foreach ($api_paths as $full_path) {
-            // 3. Create a relative path by removing the source root
             $rel = str_replace($current_source . DIRECTORY_SEPARATOR, '', $full_path);
             
-            // If the Api folder is at the root of the source, str_replace might return the full path 
-            // or an empty string. We clean it up here.
             $rel = trim($rel, DIRECTORY_SEPARATOR);
             
             if (!empty($rel)) {
