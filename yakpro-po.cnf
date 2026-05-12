@@ -96,26 +96,45 @@ $conf->user_comment                     = null;         // user comment to inser
 $conf->extract_comment_from_line        = null;         // when both 2 are set, each obfuscated file will contain an extract of the corresponding source file,
 $conf->extract_comment_to_line          = null;         // starting from extract_comment_from_line number, and ending at extract_comment_to_line line number.
 
-// --- Pipeline-Friendly API Whitelist ---
-$current_source = realpath($conf->source_directory);
+// --- Pipeline-Friendly API Whitelist START ---
 
-if ($current_source && is_dir($current_source)) {
-    $api_paths = glob($current_source . '/**/[Aa][Pp][Ii]', GLOB_ONLYDIR);
+// 1. Determine the actual source being processed. 
+// Note: Yakpro-po CLI arguments override $conf->source_directory at runtime.
+$actual_source = isset($argv[1]) ? realpath($argv[1]) : realpath($conf->source_directory);
 
-    if (is_array($api_paths)) {
-        foreach ($api_paths as $full_path) {
-            $rel = str_replace($current_source . DIRECTORY_SEPARATOR, '', $full_path);
+if ($actual_source && is_dir($actual_source)) {
+    $directory = new RecursiveDirectoryIterator($actual_source);
+    $iterator = new RecursiveIteratorIterator($directory);
+    
+    foreach ($iterator as $item) {
+        if ($item->isDir()) {
+            $pathName = $item->getPathname();
             
-            $rel = trim($rel, DIRECTORY_SEPARATOR);
-            
-            if (!empty($rel)) {
-                $conf->t_keep[] = $rel;
+            // Check if the directory name is exactly "Api" (case-insensitive)
+            // We check for /Api at the end or /Api/ in the middle
+            if (preg_match('/[\\\/][Aa][Pp][Ii]([\\\/]|$)/', $pathName)) {
+                
+                // Get path relative to the source root
+                $relative = str_replace($actual_source . DIRECTORY_SEPARATOR, '', $pathName);
+                $relative = trim($relative, DIRECTORY_SEPARATOR);
+                
+                if (!empty($relative)) {
+                    $conf->t_keep[] = $relative;
+                }
             }
         }
     }
 }
 
-// 4. Clean up the array
+// 2. Safeguard: Magento APIs often use these variables. 
+// Even if the API file is "kept", external files calling it might scramble these names.
+// Adding them here ensures consistency across the whole extension.
+$api_vars = array('app_name', 'ids', 'data', 'request', 'response', 'context');
+$conf->t_ignore_variables = array_merge((array)$conf->t_ignore_variables, $api_vars);
+
+// 3. Finalize the list
 $conf->t_keep = array_unique(array_filter((array)$conf->t_keep));
+
+// --- Pipeline-Friendly API Whitelist END ---
 
 ?>
