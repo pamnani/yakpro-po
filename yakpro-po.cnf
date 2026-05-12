@@ -23,7 +23,7 @@ $conf->t_ignore_pre_defined_classes     = 'all';        // 'all' (default value)
                                                         // same behaviour for properties...
 
 $conf->t_ignore_constants               = null;         // array where values are names to ignore.
-$conf->t_ignore_variables               = array('wp_meta_boxes','wp_version','wpdb','wp_query','pluginDir','moIdpUtility','dbIDPQueries','dirNameIDP','pluginDirUrl','current_user','blog_id','base_url','user','current_site','phoneLogic','emailLogic','bp','wpdb','forms_table','errors','sreg','simplr_options','ultimatemember','upme_save','upme_register','wpmem_themsg','post','wp_roles','mo_manager_utility' ,'form', 'form_state','pagenow', '_wp_admin_css_colors');         // array where values are names to ignore.$conf->t_ignore_functions               = null;         // array where values are names to ignore.
+$conf->t_ignore_variables               = array('wp_meta_boxes','wp_version','wpdb','wp_query','pluginDir','moIdpUtility','dbIDPQueries','dirNameIDP','pluginDirUrl','current_user','blog_id','base_url','user','current_site','phoneLogic','emailLogic','bp','wpdb','forms_table','errors','sreg','simplr_options','ultimatemember','upme_save','upme_register','wpmem_themsg','post','wp_roles','mo_manager_utility' ,'form', 'form_state','pagenow', '_wp_admin_css_colors' , 'block');         // array where values are names to ignore.$conf->t_ignore_functions               = null;         // array where values are names to ignore.
 $conf->t_ignore_class_constants         = null;         // array where values are names to ignore.
 $conf->t_ignore_methods                 = null;         // array where values are names to ignore.
 $conf->t_ignore_properties              = null;         // array where values are names to ignore.
@@ -95,5 +95,15 @@ $conf->user_comment                     = null;         // user comment to inser
 
 $conf->extract_comment_from_line        = null;         // when both 2 are set, each obfuscated file will contain an extract of the corresponding source file,
 $conf->extract_comment_to_line          = null;         // starting from extract_comment_from_line number, and ending at extract_comment_to_line line number.
+
+$api_folders = glob($conf->source_directory . '/**/[Aa][Pp][Ii]', GLOB_ONLYDIR);
+if (is_array($api_folders)) {
+    foreach ($api_folders as $folder) {
+        // Convert absolute path to relative path for the obfuscator
+        $relative_path = str_replace($conf->source_directory . DIRECTORY_SEPARATOR, '', $folder);
+        $conf->t_keep[] = $relative_path;
+    }
+}
+// --- Dynamic API Whitelist End ---
 
 ?>
