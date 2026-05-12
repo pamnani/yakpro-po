@@ -96,14 +96,19 @@ $conf->user_comment                     = null;         // user comment to inser
 $conf->extract_comment_from_line        = null;         // when both 2 are set, each obfuscated file will contain an extract of the corresponding source file,
 $conf->extract_comment_to_line          = null;         // starting from extract_comment_from_line number, and ending at extract_comment_to_line line number.
 
-$api_folders = glob($conf->source_directory . '/**/[Aa][Pp][Ii]', GLOB_ONLYDIR);
-if (is_array($api_folders)) {
-    foreach ($api_folders as $folder) {
-        // Convert absolute path to relative path for the obfuscator
-        $relative_path = str_replace($conf->source_directory . DIRECTORY_SEPARATOR, '', $folder);
+// --- Robust API Whitelist ---
+$source = realpath($conf->source_directory);
+$it = new RecursiveDirectoryIterator($source);
+foreach (new RecursiveIteratorIterator($it) as $file) {
+    // Check if the file is in an "Api" directory
+    if (strpos($file->getPathname(), DIRECTORY_SEPARATOR . 'Api' . DIRECTORY_SEPARATOR) !== false) {
+        // Get the directory of this file
+        $dir = $file->getPath();
+        // Convert to relative path
+        $relative_path = str_replace($source . DIRECTORY_SEPARATOR, '', $dir);
         $conf->t_keep[] = $relative_path;
     }
 }
-// --- Dynamic API Whitelist End ---
+$conf->t_keep = array_unique((array)$conf->t_keep);
 
 ?>
