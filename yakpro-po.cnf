@@ -83,41 +83,50 @@ $conf->silent                           = false;        // display or not Inform
 
 $conf->source_directory                 = "../magento2";         // self explanatory
 $conf->target_directory                 = "../obfuscated";         // self explanatory   
-// --- START CORRECTED T_KEEP SECTION ---
-$src = $conf->source_directory;
-$abs_src = realpath($src);
+// 1. Mandatory files
+$keep = array(
+    'utilities/xmlseclibs.php',
+    'xmlseclibs.php',
+    'composer.json',
+    'registration.php'
+);
 
-// This array will hold every possible variation the tool might see
-$keep_variations = array();
-
-// 1. The original files you wanted to keep
-$keep_variations[] = 'utilities/xmlseclibs.php';
-$keep_variations[] = 'xmlseclibs.php';
-$keep_variations[] = 'composer.json';
-$keep_variations[] = 'registration.php';
-
-// 2. Dynamic Api detection
-// Since the tool uses in_array (exact matches), we provide common variations
-if ($abs_src) {
-    $keep_variations[] = $abs_src . '/Api';
-    $keep_variations[] = $abs_src . '/API';
+// 2. The Fail-Safe Logic
+// Instead of guessing the path, we look at the source directory you provided
+// and manually construct the most likely relative paths.
+if (!empty($conf->source_directory)) {
+    $base = rtrim($conf->source_directory, '/');
+    
+    // This covers: "path/to/module/Api" and "path/to/module/API"
+    $keep[] = $base . '/Api';
+    $keep[] = $base . '/API';
+    
+    // This covers the folder name alone if the tool checks short names
+    $keep[] = 'Api';
+    $keep[] = 'API';
 }
 
-// 3. Pipeline Specific: Match the command-line argument path
-// In your pipeline you use: ../magento2/$magento2_folder
-// This logic catches the subfolders like ../magento2/OAuth/Api
-if (isset($_SERVER['argv'])) {
+// 3. The "Argument" Logic
+// This catches exactly what you typed in the Bitbucket YAML command line
+if (isset($_SERVER['argv']) && is_array($_SERVER['argv'])) {
     foreach ($_SERVER['argv'] as $arg) {
-        if (strpos($arg, 'magento2/') !== false) {
-            $keep_variations[] = $arg . '/Api';
-            $keep_variations[] = $arg . '/API';
+        // If the argument looks like a path, treat it as a source
+        if (strpos($arg, '/') !== false || strpos($arg, '..') !== false) {
+            $clean_arg = rtrim($arg, '/');
+            $keep[] = $clean_arg . '/Api';
+            $keep[] = $clean_arg . '/API';
         }
     }
 }
 
-// Final assignment (MAKE SURE NO OTHER $conf->t_keep FOLLOWS THIS)
-$conf->t_keep = $keep_variations;
-// --- END CORRECTED T_KEEP SECTION ---         // array of directory or file pathnames, to keep 'as is' (i.e. not obfuscate.)
+// 4. CRITICAL: The Cleanup
+// This ensures that even if there are weird slashes (//) or backslashes (\)
+// from a Windows/Linux mix, they are normalized to standard Linux slashes.
+foreach ($keep as $key => $path) {
+    $keep[$key] = str_replace('\\', '/', $path);
+}
+
+$conf->t_keep = array_unique($keep);
 $conf->t_skip                           =  array("magento2/idp_saml");        // array of directory or file pathnames, to skip when exploring source tree structure ... they will not be on target!
 $conf->allow_and_overwrite_empty_files  = true;         // allow empty files to be kept as is
 
