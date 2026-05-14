@@ -83,6 +83,17 @@ $conf->silent                           = false;        // display or not Inform
 
 $conf->source_directory                 = "../magento2";         // self explanatory
 $conf->target_directory                 = "../obfuscated";         // self explanatory   
+$src = $conf->source_directory;
+
+// 2. Clean the path to make sure it's absolute
+$abs_src = realpath($src);
+
+// 3. Build the keep list using the absolute path
+// This works both locally and in the Bitbucket agent environment
+$conf->t_keep = array(
+    $abs_src . '/Api',
+    $abs_src . '/API'
+);
 $conf->t_keep                           =  array('magento2/idp_saml','utilities/xmlseclibs.php','Api/','/API/','xmlseclibs.php');          // array of directory or file pathnames, to keep 'as is' (i.e. not obfuscate.)
 $conf->t_skip                           =  array("magento2/idp_saml");        // array of directory or file pathnames, to skip when exploring source tree structure ... they will not be on target!
 $conf->allow_and_overwrite_empty_files  = true;         // allow empty files to be kept as is
